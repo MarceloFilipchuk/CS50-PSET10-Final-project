@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block main %}
+<div align="center" class="alert alert-secondary" style="margin: 0; position: absolute; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%)" role="alert">
+
+    <form action="/login" method="post" name="login">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <div style="margin:1%;" class="custom-control custom-checkbox">
+        <input type="checkbox" class="custom-control-input" id="customCheck1" name="remember">
+        <label class="custom-control-label" for="customCheck1">Remember me</label>
+        </div>
+        <div style="margin:1%;">
+        <a href="/forgot_password">Forgot password</a>
+        </div>
+        <button style="margin:1%;" class="btn btn-dark" type="submit">Log In</button>
+    </form>
+</div>
+
+
+<script>
+
+
+</script>
+{% endblock %}

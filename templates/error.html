@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Error
+{% endblock %}
+
+{% block main %}
+<div class="alert alert-danger" role="alert">
+
+{% with messages = get_flashed_messages() %}
+                {% if messages %}
+                            <h1 class="display-4"><strong>ERROR</strong></h1>
+                    {% for message in messages %}
+                        <h3>{{ message }}</h3>
+                    {% endfor %}
+
+
+                {% endif %}
+    {% endwith %}
+
+</div>
+
+
+
+
+{% endblock %}
