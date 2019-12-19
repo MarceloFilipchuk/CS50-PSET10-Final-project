@@ -253,7 +253,6 @@ def index():
 @app.route("/weatherlat=<lat>lng=<lng>")
 @login_required
 def get_weather(lat, lng):
-    print(weather(lat, lng))
     return jsonify(weather(lat, lng))
 
 
