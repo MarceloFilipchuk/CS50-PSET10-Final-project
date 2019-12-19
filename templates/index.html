@@ -111,6 +111,7 @@ right: 0;
 }
 
 #temperature-icon, #humidity-icon, #weather-status-icon{
+display: none;
 position: absolute;
 max-width: auto;
 height: 100%;
@@ -165,6 +166,7 @@ right: 2.5%;
 left: 2.5%;
 overflow: auto;
 }
+
 .done{
 color:gray;
 text-decoration:line-through;
@@ -205,29 +207,28 @@ border-radius: 5px;
 #daily-tasks-form{
 position: absolute;
 width: 98%;
-height: 20%;
+height: 10%;
 top: 1%;
 left: 1%;
 right: 1%;
 }
 
-#valid-daily, #invalid-daily{
-position: absolute;
-left: 0;
-}
-
 #daily-tasks-list{
-position:relative;
-width: 98%;
+position: absolute;
+width: 95%;
 height: 80%;
 top: 20%;
-left: 1%;
+left: 2.5%;
 bottom: 1%;
-right: 1%;
+right: 2.5%;
 overflow: auto;
 }
 .checkbox{
 margin-left: 1%;
+}
+
+.x-icon:hover{
+cursor: pointer;
 }
 
 </style>
@@ -244,11 +245,11 @@ margin-left: 1%;
                         <div id="myCalendar" class="vanilla-calendar"></div>
 
                         <div id="calendar-form-container">
-                                <form  action="/specific" method="post" name="specific" onsubmit="checkValidity(); createSpecificTask(); getSpecificTasks();">
+                                <form  action="/specific" method="post" name="specific" onsubmit="checkValidity(); createSpecificTask();">
                                 <div class="form-group" style="display: flex;">
                                     <input required hidden name="specific-date" type="text">
                                     <input required style="flex-direction: row;" autocomplete="off"  class="form-control" maxlength="255" minlength="1" name="specific-task" placeholder="Enter your specific task" type="text">
-                                    <button style="flex-direction: row;" class="btn btn-dark" id="submitTask" type="submit">Add</button>
+                                    <button title="Add new task" style="flex-direction: row;" class="btn btn-dark" id="submitTask" type="submit">Add</button>
                                 </div>
                                 </form>
                         </div>
@@ -258,32 +259,22 @@ margin-left: 1%;
 
         <!-- THIS CONTAINS THE WEATHER -->
         <div id="weather-container">
-
                 <div id="weather-elements-container" style="">
-                        {% if weather %}
-                                <div id="weather-status">
-
-                                        <img id="weather-status-icon" src={{ weather.get("status_icon") }}>
-                                        <strong style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;">{{ weather.get("status") }}</strong>
-
-                                </div>
-                                <div id="temperature">
-
-                                        <img id="temperature-icon" src="static/tmp.ico">
-                                        <strong style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;">
-                                                T°: {{ weather.get("tmp") }}°C <br>
-                                                Min: {{ weather.get("min_tmp") }}°C <br>
-                                                Max: {{ weather.get("max_tmp") }}°C
-                                         </strong>
-                                </div>
-                                <div id="humidity">
-
-                                        <img id="temperature-icon" src="static/hum.png">
-                                        <strong style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;">Humidity: {{ weather.get("humidity") }}%</strong>
-                                </div>
-                        {% else %}
-                                <h1>NOT AVALIABLE</h1>
-                        {% endif %}
+                        <div id="weather-status">
+                                <img id="weather-status-icon">
+                                <strong id="show-weather-status" style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;"></strong>
+                        </div>
+                        <div id="temperature">
+                                <img id="temperature-icon" src="static/tmp.ico">
+                                <strong id="show-temperature" style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;"></strong>
+                                <strong id="show-min-temp" style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;"></strong>
+                                <strong id="show-max-temp" style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;"></strong>
+                        </div>
+                        <div id="humidity">
+                                <img id="humidity-icon" src="static/hum.png">
+                                <strong id="show-humidity" style="z-index: +1; position: relative;max-width: auto; max-height: auto; margin: auto;"></strong>
+                        </div>
+                        <h1 id="no-weather" title="Allow the page to access your location" style="position: absolute; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%)">Loading...</h1>
                 </div>
 
         </div>
@@ -310,38 +301,19 @@ margin-left: 1%;
 
                 <div id="daily-tasks-elements-container">
                         <div id="daily-tasks-form">
-                                <form action="/daily" method="post" name="daily" onsubmit="createDailyTask();checkValidity();">
+                                <form action="/daily" method="post" name="daily" onsubmit="checkValidity(); createDailyTask();">
                                         <div class="form-group" style="display: flex;">
-                                            <input hidden name="daily-date" type="text">
                                             <input style="flex-direction: row;" autocomplete="off" class="form-control" maxlength="255" minlength="1" name="daily-task" placeholder="Enter your daily task" type="text" required>
-                                            <button style="flex-direction: row;" class="btn btn-dark" type="submit">Add</button>
+                                            <button title="Add new task" style="flex-direction: row;" class="btn btn-dark" type="submit">Add</button>
                                         </div>
                                 </form>
                         </div>
 
                         <div id="daily-tasks-list">
-                        {% if daily_tasks %}
-                                <ul style="list-style-type:none">
-                                {% if current_user.show_done %}
-                                        {% for tasks in daily_tasks_done %}
-                                                <li style="margin: 1%;" class="done" id="daily-{{tasks.id}}">{{ tasks.task }}<input type="checkbox" class="checkbox" checked disabled></li>
-                                        {% endfor %}
-                                {% endif %}
-
-                                {% if daily_tasks_undone %}
-                                        {% for tasks in daily_tasks_undone %}
-                                                <li style="margin: 1%;" id="daily-{{tasks.id}}">{{ tasks.task }}<input type="checkbox" class="checkbox" id="daily-checkbox{{tasks.id}}" value = "{{tasks.id}}" onclick="dailyTaskDone({{tasks.id}});"></li>
-                                        {% endfor %}
-                                {% else %}
-                                        {% if not current_user.show_done %}
-                                                <h3 id="no-tasks">All tasks have been done</h3>
-                                        {% endif %}
-                                {% endif %}
+                                <ul style="list-style-type:none;">
+                                        <div id="showDailyTasks"></div>
                                 </ul>
                         </div>
-                        {% else %}
-                        <h3 id="no-tasks">No tasks have been added yet</h3>
-                        {% endif %}
 
                 </div>
 
@@ -354,6 +326,18 @@ margin-left: 1%;
 var myCalendar = new VanillaCalendar({
     selector: "#myCalendar"
 });
+
+// This creates a full date
+function getFullDate(){
+
+    var date = new Date();
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var day = date.getDate();
+
+    var fullDate = String(year) + "-" + String(month) + "-" + String(day);
+    return fullDate;
+}
 
 // This creates event listener "onclick" for each one of the currently displayed dates in the calendar and set the "specific-date" form value to the
 // currently selected date
@@ -394,43 +378,88 @@ function getSpecificTasks(){
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
+            if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+            }
+                if (this.readyState == 4 && this.status == 200){
+                    document.getElementById("loading").style.display = "none";
+                    specificTasks.innerHTML = "";
+                    var obj = JSON.parse(this.response);
+                    if (!obj){
+                            specificTasks.innerHTML = '<h3 id="no-tasks">No tasks have been added yet.</h3>' ;
+                    }
+                    else if(obj=="notasks"){
+                            specificTasks.innerHTML = '<h3 id="no-tasks"> All tasks have been done. </h3>';
+                    }
+                    else{
+                        for(let i=0, len=obj.length; i<len; i++){
+                                if (!obj[i].done){
+                                specificTasks.innerHTML += '<li style="margin: 1%;" id="specific-'+ obj[i].id +'"><img title="Remove task" alt="xicon.png" class="x-icon" src="static/xicon.png"' +
+                                        'style="margin: 1%;width:25px; height: auto;" onclick="removeSpecificTask(' + obj[i].id + ');">' + obj[i].task +
+                                                           '<input type="checkbox" class="checkbox" id="specific-checkbox' + obj[i].id + '" value="' + obj[i].id +
+                                                           '" onclick="specificTaskDone(' + obj[i].id + ');"></li>';
+                                }
+                                else{
+                                        specificTasks.innerHTML += '<li style="margin: 1%;" class="done" id="specific-' + obj[i].id +
+                                        '"><img title="Remove task" alt="xicon.png" class="x-icon" src="static/xicon.png" style="margin: 1%; width:25px; height: auto;" onclick="removeSpecificTask(' +
+                                        obj[i].id + ');">' + obj[i].task + '<input type="checkbox" class="checkbox" checked disabled></li>';
+                                }
+                        }
+                    }
+                }
+            };
+
+    xhttp.open("GET", "/specific/" + date, true);
+    xhttp.send();
+}
+
+// This gets (in JSON format) all the daily tasks from the selected day in the calendar
+function getDailyTasks(){
+
+    var dailyTasks = document.getElementById("showDailyTasks");
+
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+            if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
         if (this.readyState == 4 && this.status == 200){
-            specificTasks.innerHTML = "";
+                document.getElementById("loading").style.display = "none";
+            dailyTasks.innerHTML = "";
             var obj = JSON.parse(this.response);
             if (!obj){
-                    document.getElementById("specific-tasks-elements-container").innerHTML = '<h3 id="no-tasks">No tasks have been added yet.</h3>' ;
+                    dailyTasks.innerHTML = '<h3 id="no-tasks">No tasks have been added yet.</h3>' ;
             }
             else if(obj=="notasks"){
-                    document.getElementById("specific-tasks-elements-container").innerHTML = '<h3 id="no-tasks"> All tasks have been done. </h3>';
+                    dailyTasks.innerHTML = '<h3 id="no-tasks"> All tasks have been done. </h3>';
             }
             else{
                 for(let i=0, len=obj.length; i<len; i++){
                         if (!obj[i].done){
-                        specificTasks.innerHTML += '<li style="margin: 1%;" id="specific-'+ obj[i].id +'">' + obj[i].task +
-                                                   '<input type="checkbox" class="checkbox" id="specific-checkbox' + obj[i].id + '" value="' + obj[i].id +
-                                                   '" onclick="specificTaskDone(' + obj[i].id + ');"></li>';
+                                dailyTasks.innerHTML += '<li style="margin: 1%;" id="daily-'+ obj[i].id + '"><img title="Remove task" alt="xicon.png" class="x-icon" src="static/xicon.png"' +
+                                'style="margin: 1%;width:25px; height: auto;" onclick="removeDailyTask(' + obj[i].id + ');">' + obj[i].task +
+                                '<input type="checkbox" class="checkbox" id="daily-checkbox' + obj[i].id + '" value="' + obj[i].id +
+                                '" onclick="dailyTaskDone(' + obj[i].id + ');"></li>';
                         }
                         else{
-                                specificTasks.innerHTML += '<li style="margin: 1%;" class="done">' +
-                                                            obj[i].task + '<input type="checkbox" class="checkbox" checked disabled></li>';
+                                dailyTasks.innerHTML += '<li style="margin: 1%;" class="done" id="daily-' + obj[i].id +
+                                '"><img title="Remove task" alt="xicon.png" class="x-icon" src="static/xicon.png" style="margin: 1%; width:25px; height: auto;" onclick="removeDailyTask(' +
+                                obj[i].id + ');">' + obj[i].task + '<input type="checkbox" class="checkbox" checked disabled></li>';
                         }
                 }
             }
         }
     };
 
-    xhttp.open("GET", "/specific/" + date, true);
+    xhttp.open("GET", "/daily/", true);
     xhttp.send();
 }
 
 // This changes each daily task once it's checkbox is clicked to done, sending the corresponing data to update the database and doing the styling
 function dailyTaskDone(id){
 
-        var date = new Date();
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
-        var fullDate = String(year) + "-" + String(month) + "-" + String(day);
+        var fullDate = getFullDate();
 
         var checkbox = document.getElementById("daily-checkbox"+id);
         var task = document.getElementById("daily-"+id);
@@ -448,8 +477,21 @@ function dailyTaskDone(id){
 
         // This sends an AJAX request to the back-end route listening in order to set the corresponding task to "done" (True)
         var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
+                if (this.readyState == 4 && this.status == 200){
+                        document.getElementById("loading").style.display = "none";
+                        if (!showDone){
+                                getDailyTasks();
+                        }
+                }
+        };
         xhttp.open("GET", "/daily//id=" + id + "date=" + fullDate , true);
         xhttp.send();
+
+
 }
 
 // This changes each specific task once it's checkbox is clicked to done, sending the corresponing data to update the database and doing the styling
@@ -471,26 +513,25 @@ function specificTaskDone(id){
 
         // This sends an AJAX request to the back-end route listening in order to set the corresponding task to "done" (True)
         var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
+                if (this.readyState == 4 && this.status == 200){
+                        document.getElementById("loading").style.display = "none";
+                        // This refreshes the specific tasks list if showDone is "False"
+                        if (!showDone){
+                                getSpecificTasks();
+                        }
+                }
+        };
         xhttp.open("GET", "/specific//" + id, true);
         xhttp.send();
-
-        // This refreshes the specific tasks list
-        getSpecificTasks();
 }
-
-// This gets the users coordinates and sends them to the back-end in order to get the weather data
-window.onload = function getLocation(){
-        navigator.geolocation.getCurrentPosition(showPosition);
-
-        function showPosition(position){
-        console.log(position);
-        console.log(position.coords.latitude);
-        console.log(position.coords.longitude);
-        }
-};
 
 // This creates a new specific task
 function createSpecificTask(){
+
         // Prevents the screen from refreshing
         event.preventDefault();
 
@@ -500,6 +541,15 @@ function createSpecificTask(){
 
         // Creates an AJAX request and sends the data to the back-end for storage in the database
         var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
+                if (this.readyState == 4 && this.status == 200){
+                        document.getElementById("loading").style.display = "none";
+                        getSpecificTasks();
+                        }
+                };
         xhttp.open("GET", "/specifictask=" + specificTask + "date=" + specificDate , true);
         xhttp.send();
 
@@ -508,38 +558,117 @@ function createSpecificTask(){
 
 // This creates a new daily task on form submission
 function createDailyTask(){
-        // Prevents the submit
         event.preventDefault();
+        var fullDate = getFullDate();
+        var task = document.forms["daily"]["daily-task"].value;
 
-        // Gets the date
-        var date = new Date();
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1;
-        var day = date.getDate();
+        // Creates an AJAX request and sends the data to the back-end for storage in the database
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+                if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
+                if (this.readyState == 4 && this.status == 200){
+                        document.getElementById("loading").style.display = "none";
+                        getDailyTasks();
+                        }
+                };
+        xhttp.open("GET", "/dailytask=" + task + "date=" + fullDate , true);
+        xhttp.send();
 
-        var fullDate = String(year) + "-" + String(month) + "-" + String(day);
+        document.forms["daily"]["daily-task"].value="";
 
-        // Gets the necesary values
-        document.forms["daily"]["daily-date"].value = fullDate;
-        document.getElementsByName("daily")[0].submit();
 }
 
 // This updates the daily tasks database
-window.onload = function getFullDate(){
+window.onload = function (){
+    getDailyTasks();
+    var fullDate = getFullDate();
 
-    var date = new Date();
-    var year = date.getFullYear();
-    var month = date.getMonth() + 1;
-    var day = date.getDate();
-
-    var fullDate = String(year) + "-" + String(month) + "-" + String(day);
     // This sends an AJAX request to the back-end route listening in order to check if daily tasks have to be reseted
-
     var xhttp = new XMLHttpRequest();
     xhttp.open("GET", "/update_daily_tasks" + fullDate , true);
     xhttp.send();
 };
 
+// Removes the daily task from the database
+function removeDailyTask(id){
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+            if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
+            if (this.readyState == 4 && this.status == 200){
+                    document.getElementById("loading").style.display = "none";
+                    // Updates the daily tasks displayed
+                    getDailyTasks();
+                }
+            };
+
+    xhttp.open("GET", "/removedailytask=" + id , true);
+    xhttp.send();
+}
+
+// Removes the specific task from the database
+function removeSpecificTask(id){
+    var xhttp = new XMLHttpRequest();
+
+    xhttp.onreadystatechange = function() {
+            if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
+            if (this.readyState == 4 && this.status == 200){
+                    document.getElementById("loading").style.display = "none";
+                    // Updates the daily tasks displayed
+                    getSpecificTasks();
+                }
+            };
+
+    xhttp.open("GET", "/removespecifictask=" + id , true);
+    xhttp.send();
+}
+
+// This gets the users coordinates and sends them to the back-end in order to get the weather data
+window.onload = function getLocation(){
+navigator.geolocation.getCurrentPosition(showPosition);
+document.getElementById("showSpecificTasks").innerHTML = '<h3 id="no-tasks">Select a date in the calendar.</h3>'
+
+getDailyTasks();
+
+function showPosition(position){
+var lat = position.coords.latitude;
+var lng= position.coords.longitude;
+var xhttp = new XMLHttpRequest();
+
+xhttp.onreadystatechange = function() {
+    if (this.readyState != 4 && this.status != 200){
+                document.getElementById("loading").style.display = "block";
+        }
+    if (this.readyState == 4 && this.status == 200){
+            document.getElementById("loading").style.display = "none";
+
+            weather = JSON.parse(this.response);
+            if (weather){
+                    document.getElementById("no-weather").style.display = "none";
+                    document.getElementById("humidity-icon").style.display = "block";
+                    document.getElementById("temperature-icon").style.display = "block";
+                    document.getElementById("weather-status-icon").style.display = "block";
+                    document.getElementById("show-weather-status").innerHTML = weather.status;
+                    document.getElementById("weather-status-icon").src = weather.status_icon;
+                    document.getElementById("show-temperature").innerHTML = "T°: " + weather.tmp;
+                    document.getElementById("show-min-temp").innerHTML ="Min: " + weather.min_tmp;
+                    document.getElementById("show-max-temp").innerHTML ="Max: " + weather.max_tmp;
+                    document.getElementById("show-humidity").innerHTML = "Humidity: " + weather.humidity + "%";
+            }
+
+        }
+    };
+
+xhttp.open("GET", "/weatherlat=" + lat + "lng=" + lng , true);
+xhttp.send();
+}
+};
 
 </script>
 

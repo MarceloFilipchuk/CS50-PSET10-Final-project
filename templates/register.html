@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-<div align="center" class="alert alert-secondary" style="margin: 0; position: absolute; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%)" role="alert">
+<div align="center" class="alert alert-secondary" style="margin: 0; position: absolute; width: 25%; top: 50%; left: 50%; margin-right: -50%; transform: translate(-50%, -50%)" role="alert">
      <form action="/register" method="post" id="form" name="register" onsubmit="check()" class="needs-validation" novalidate>
         <div class="form-group">
             <input autocomplete="off" minlength="4" maxlength="10" autofocus class="form-control" name="username" placeholder="Username" type="text" onkeyup="change_color();" required>
@@ -18,7 +18,7 @@
             <div id="passwordInvalid" class="invalid-feedback"></div>
         </div>
         <div class="form-group">
-            <input class="form-control"  maxlength="10" name="confirmation" placeholder="Confirm password" type="password" onkeyup="check_passwords()" required >
+            <input class="form-control" minlength="4" maxlength="10" name="confirmation" placeholder="Confirm password" type="password" onkeyup="check_passwords()" required >
             <div id="confirmationValid" class="valid-feedback">Passwords match</div>
             <div id="confirmationInvalid" class="invalid-feedback">Passwords don't match</div>
         </div>

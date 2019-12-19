@@ -75,6 +75,7 @@ class DailyTasks(db.Model):
     done = db.Column(db.Boolean, nullable=False, default=False)
     last_updated = db.Column(db.String(10), nullable=False)
 
+
 # This initiates the log in manager
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -85,12 +86,10 @@ def unauthorized():
     flash("Must be logged in in order to perform that action")
     return redirect("/error")
 
+
 @login_manager.user_loader
 def load_user(user_id):
     return Users.query.get(user_id)
-
-# THIS ONLY GETS THE WEATHER ONE TIME IN ORDER TO TEST<<<<<<<<<<<<<<<<<<<<<<<<<BORRAR CUANDO ESTE TODO LISTO!!!!!!!!!!!!!!!!!
-weather_data = weather(-31.4128753, -64.18130219999999, "Cordoba")
 
 
 # Manages all the flashed error messages
@@ -245,19 +244,16 @@ def confirm_account(token):
 
 
 # This shows the index
-@app.route("/", methods = ["GET", "POST"])
+@app.route("/")
 @login_required
 def index():
-    if request.method == "GET":
-        owner_id=current_user.get_id()
+    return render_template("index.html")
 
-        # This gets all the daily tasks from the user
-        daily_tasks = DailyTasks.query.filter_by(owner_id=owner_id).all()
-        done_daily_tasks = DailyTasks.query.filter_by(owner_id=owner_id, done=True).all()
-        undone_daily_tasks = DailyTasks.query.filter_by(owner_id=owner_id, done=False).all()
-        #This gets the weather according to the users coordinates
-        #weather_data = weather(-31.4128753, -64.18130219999999)
-        return render_template("index.html", daily_tasks_done=done_daily_tasks, daily_tasks=daily_tasks, daily_tasks_undone=undone_daily_tasks, weather = weather_data)
+@app.route("/weatherlat=<lat>lng=<lng>")
+@login_required
+def get_weather(lat, lng):
+    print(weather(lat, lng))
+    return jsonify(weather(lat, lng))
 
 
 # This route is used to check for usernames or emails according to AJAX requests
@@ -309,17 +305,16 @@ def get_specific_task(date):
     result = SpecificTasks.query.filter_by(owner_id=current_user.get_id(), date=date).all()
     if not result:
         return jsonify(False)
-
-    # This will show the tasks according to the user's choice of seeing all tasks or only those who are undone
-    show = Users.query.filter_by(id=current_user.get_id()).first()
-    if show.show_done:
-        return jsonify(turn_into_dictionary(result))
     else:
-        undone_tasks = SpecificTasks.query.filter_by(owner_id=current_user.get_id(), date=date, done=False).all()
-        if undone_tasks:
-            return jsonify(turn_into_dictionary(undone_tasks))
+        # This will show the tasks according to the user's choice of seeing all tasks or only those who are undone
+        if current_user.show_done:
+            return jsonify(turn_into_dictionary(result))
         else:
-            return jsonify("notasks")
+            undone_tasks = SpecificTasks.query.filter_by(owner_id=current_user.get_id(), date=date, done=False).all()
+            if undone_tasks:
+                return jsonify(turn_into_dictionary(undone_tasks))
+            else:
+                return jsonify("notasks")
 
 
 # This updates a specific task to "done" (True) according to the "id" sent by an AJAX request
@@ -349,12 +344,9 @@ def update_daily_tasks(date):
 
 
 # This saves a daily task into the database
-@app.route("/daily", methods=["POST"])
+@app.route("/dailytask=<task>date=<date>", methods=["GET"])
 @login_required
-def save_daily_task():
-    if request.method == "POST":
-        task = request.form.get("daily-task")
-        date = request.form.get("daily-date")
+def daily(task, date):
         if not task:
             flash("Must input a task")
             return redirect("/error")
@@ -366,6 +358,24 @@ def save_daily_task():
         db.session.commit()
         return redirect("/")
 
+
+# This shows all the daily tasks
+@app.route("/daily/")
+@login_required
+def show_daily_tasks():
+    tasks = DailyTasks.query.filter_by(owner_id=current_user.get_id()).all()
+    if not tasks:
+        return jsonify(False)
+    else:
+        # This will show the tasks according to the user's choice of seeing all tasks or only those who are undone
+        if current_user.show_done:
+            return jsonify(turn_into_dictionary(tasks))
+        else:
+            undone_tasks = DailyTasks.query.filter_by(owner_id=current_user.get_id(), done=False).all()
+            if undone_tasks:
+                return jsonify(turn_into_dictionary(undone_tasks))
+            else:
+                return jsonify("notasks")
 
 # This turns a daily task into "done" (True) according to an "id" sent by an AJAX request
 @app.route("/daily//id=<daily_id>date=<date>")
@@ -399,86 +409,94 @@ def change():
         # Looks up for the users data
         check = Users.query.filter_by(id=current_user.get_id()).first()
 
-        # This creates a dictionary to be sent with the token
-        dictionary ={}
-        dictionary["user_id"] = current_user.get_id()
+        # Checks the users password
+        if not old_password:
+            logout_user()
+            flash("In order to make any change you must input your password")
+            return redirect("/error")
+        else:
+            if check_password_hash(check.password, old_password):
+                # This creates a dictionary to be sent with the token
+                dictionary ={}
+                dictionary["user_id"] = current_user.get_id()
 
-        # Updates the username
-        if username:
-            #Checks if the username is not already taken
-            check_username = Users.query.filter_by(username=username).first()
-            if not check_username:
+                # Updates the username
+                if username:
+                    #Checks if the username is not already taken
+                    check_username = Users.query.filter_by(username=username).first()
+                    if not check_username:
 
-                # This adds the username to the dictionary
-                dictionary["username"] = username
+                        # This adds the username to the dictionary
+                        dictionary["username"] = username
+
+                    else:
+                        # Username already used, returns error
+                        flash("Username already taken.")
+                        return redirect("/error")
+
+                # Updates the email
+                if email:
+
+                    # Checks if the email is not already used
+                    check_email = Users.query.filter_by(email=email).first()
+                    if not check_email:
+
+                        # This adds the email to the dictionary
+                        dictionary["email"] = email
+
+                    else:
+                        # Email already used, returns error
+                        flash("Email already taken.")
+                        return redirect("/error")
+
+                # Updates the password
+                if password:
+                    error_message = "Password format incorrect, must have at least one uppercase, one lowercase and numbers with a minimal length of 4 characters."
+                    # Ensures proper usage
+                    if not password or not confirmation or not old_password:
+                        flash("Must fill all password forms.")
+                        return redirect("/error")
+                    # Checks if the new passwords match
+                    if password != confirmation:
+                        flash("New and confirmation passwords must match")
+                        return redirect("/error")
+
+                    # This ensures that the password meets the required criteria
+                    if not any(x.isupper() for x in password):
+                        flash(error_message)
+                        return render_template("error.html")
+                    elif not any(x.islower() for x in password):
+                        flash(error_message)
+                        return render_template("error.html")
+                    elif not any(x.isdigit() for x in password):
+                        flash(error_message)
+                        return render_template("error.html")
+                    elif len(password) < 4:
+                        flash(error_message)
+                        return render_template("error.html")
+
+                    # This adds the password to the dictionary
+                    dictionary["password"] = generate_password_hash(password)
+
+                # This creates the token
+                random = random_generator()
+                dictionary["token"] = random
+                token = s.dumps(dictionary, salt="change-data")
+                check.token = random
+                db.session.commit()
+
+                # This creates and send the email with the token
+                msg = Message("Confirm your changes in your account", sender="MyOnlineAgendaCS50@gmail.com", recipients=[user.email])
+                confirmation_link = url_for("confirm_changes", token=token, _external=True)
+                msg.body = "Your validation link is <a href={}>here</a>.\nPlease be sure to use within the next 15 minutes as it will expire and you will need to register again.".format(confirmation_link)
+                mail.send(msg)
+
+                return redirect("/login")
 
             else:
-                # Username already used, returns error
-                flash("Username already taken.")
+                logout_user()
+                flash("The password you entered is incorrect")
                 return redirect("/error")
-
-        # Updates the email
-        if email:
-
-            # Checks if the email is not already used
-            check_email = Users.query.filter_by(email=email).first()
-            if not check_email:
-
-                # This adds the email to the dictionary
-                dictionary["email"] = email
-
-            else:
-                # Email already used, returns error
-                flash("Email already taken.")
-                return redirect("/error")
-
-        # Updates the password
-        if password:
-            error_message = "Password format incorrect, must have at least one uppercase, one lowercase and numbers with a minimal length of 4 characters."
-            # Ensures proper usage
-            if not password or not confirmation or not old_password:
-                flash("Must fill all password forms.")
-                return redirect("/error")
-            # Checks if the old password is correct
-            if not check_password_hash(check.password, old_password):
-                flash("Old password is incorrect.")
-                return redirect("/error")
-            # Checks if the new passwords match
-            if password != confirmation:
-                flash("New and confirmation passwords must match")
-                return redirect("/error")
-
-            # This ensures that the password meets the required criteria
-            if not any(x.isupper() for x in password):
-                flash(error_message)
-                return render_template("error.html")
-            elif not any(x.islower() for x in password):
-                flash(error_message)
-                return render_template("error.html")
-            elif not any(x.isdigit() for x in password):
-                flash(error_message)
-                return render_template("error.html")
-            elif len(password) < 4:
-                flash(error_message)
-                return render_template("error.html")
-
-            # This adds the password to the dictionary
-            dictionary["password"] = generate_password_hash(password)
-
-        # This creates the token
-        random = random_generator()
-        dictionary["token"] = random
-        token = s.dumps(dictionary, salt="change-data")
-        check.token = random
-        db.session.commit()
-
-        # This creates and send the email with the token
-        msg = Message("Confirm your changes in your account", sender="MyOnlineAgendaCS50@gmail.com", recipients=[user.email])
-        confirmation_link = url_for("confirm_changes", token=token, _external=True)
-        msg.body = "Your validation link is <a href={}>here</a>.\nPlease be sure to use within the next 15 minutes as it will expire and you will need to register again.".format(confirmation_link)
-        mail.send(msg)
-
-    return redirect("/login")
 
 @app.route("/confirm_changes/<token>", methods=["GET"])
 def confirm_changes(token):
@@ -524,6 +542,12 @@ def confirm_changes(token):
         flash("Your validation link is wrong.")
         return redirect("/error")
     return redirect("/login")
+
+# This allows to check the users option "show done tasks"
+@app.route("/show_done", methods=["GET"])
+@login_required
+def show():
+    return jsonify(current_user.show_done)
 
 # This allows to switch between seeing all tasks and only those who are not done yet
 @app.route("/show_done/<value>", methods=["GET"])
@@ -631,6 +655,34 @@ def reset_password(token):
         except BadTimeSignature:
             flash("Your validation link is wrong.")
             return redirect("/error")
+
+
+# This removes a daily task from the database
+@app.route("/removedailytask=<id>")
+@login_required
+def remove_daily_task(id):
+    task = DailyTasks.query.filter_by(owner_id=current_user.get_id(), id=id).first()
+    if task:
+        db.session.delete(task)
+        db.session.commit()
+        return redirect("/")
+    else:
+        flash("No task have been found")
+        return redirect("/error")
+
+
+# This removes a specific task from the database
+@app.route("/removespecifictask=<id>")
+@login_required
+def remove_specific_task(id):
+    task = SpecificTasks.query.filter_by(owner_id=current_user.get_id(), id=id).first()
+    if task:
+        db.session.delete(task)
+        db.session.commit()
+        return redirect("/")
+    else:
+        flash("No task have been found")
+        return redirect("/error")
 
 
 # Handles errors

@@ -3,9 +3,6 @@
 
 <head>
 
-<!-- JQuery -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
 <!-- CSS and JavScript for the calendar -->
 <link rel="stylesheet" href="static/src/css/vanilla-calendar-min.css">
 <script src="static/src/js/vanilla-calendar-min.js"></script>
@@ -55,6 +52,15 @@ position: absolute;
 top: 50%;
 transform: translate(7%, -50%);
 }
+#loading{
+display: none;
+position: absolute;
+top: 50%;
+left: 50%;
+margin-right: -50%;
+transform: translate(-50%, -50%)
+}
+
 #navbar-ul{
 position: fixed;
 top: 2%;
@@ -78,7 +84,7 @@ height: 90%;
 box-sizing: border-box;
 }
 
-.dropdown{
+.menu{
 background-color: gray;
 z-index: 2;
 position: fixed;
@@ -90,7 +96,7 @@ border-bottom-right-radius: 5px;
 border-top:none;
 }
 
-.dropdown-content {
+.menu-content {
 display: none;
 color: black;
 padding: 5px;
@@ -98,7 +104,7 @@ text-decoration: none;
 z-index: 2;
 }
 
-.dropdown-content p:hover{
+.menu-content p:hover{
 background-color: DarkGray;
 color: white;
 cursor: pointer;
@@ -120,15 +126,16 @@ cursor: pointer;
 
 <header>
     {% if current_user.is_authenticated %}
-    <h3 id="logo"><a href="/" style="color: black;">MyOnlineAgenda</a></h3>
+    <h3 title="Go to index" id="logo"><a href="/" style="color: black;">MyOnlineAgenda</a></h3>
     {% else %}
     <h3 id="logo"><a style="color: black;">MyOnlineAgenda</a></h3>
     {% endif %}
+    <h3 id="loading">Loading...</h3>
     <ul id="navbar-ul">
         {% if current_user.is_authenticated %}
             <li id="navbar-li">
                 <a class="btn btn-dark" onclick="showDropdown();" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{ current_user.username|e }}
+                    Settings
                 </a>
             </li>
 
@@ -144,8 +151,8 @@ cursor: pointer;
         {% endif %}
     </ul>
 
-<div class="dropdown">
-    <div class="dropdown-content">
+<div class="menu">
+    <div class="menu-content">
         {% if current_user.show_done %}
             <p onclick="hideDone();" >Hide done</p>
         {% else %}
@@ -167,12 +174,37 @@ cursor: pointer;
 
 <script>
 
+document.getElementById("loading").style.display = "block";
+
+$(document).ready(function() {
+    document.getElementById("loading").style.display = "none";
+});
+
+//This is a global variable that defines if the lists will be updated when the doneTask functions are executed
+var showDone;
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState != 4 && this.status != 200){
+        document.getElementById("loading").style.display = "block";
+    }
+    if (this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "none";
+        showDone = JSON.parse(this.response)
+    }
+};
+xhttp.open("GET", "/show_done", true);
+xhttp.send();
+
 // This sends an AJAX request to the back-end route listening in order to set the view to "hide all done tasks
 function hideDone(){
     var xhttp = new XMLHttpRequest();
-    var False = JSON.stringify(false)
+    var False = JSON.stringify(false);
     xhttp.onreadystatechange = function() {
+        if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
         if (this.readyState == 4 && this.status == 200){
+            document.getElementById("loading").style.display = "none";
             location.reload();
         }
     };
@@ -183,9 +215,13 @@ function hideDone(){
 // This sends an AJAX request to the back-end route listening in order to set the view to "show all tasks"
 function showAll(){
     var xhttp = new XMLHttpRequest();
-    var True = JSON.stringify(true)
+    var True = JSON.stringify(true);
     xhttp.onreadystatechange = function() {
+        if (this.readyState != 4 && this.status != 200){
+                        document.getElementById("loading").style.display = "block";
+                }
         if (this.readyState == 4 && this.status == 200){
+            document.getElementById("loading").style.display = "none";
             location.reload();
         }
     };
@@ -195,11 +231,11 @@ function showAll(){
 
 // This shows the dropdown menu or hides it
 function showDropdown(){
-    document.getElementsByClassName("dropdown-content")[0].style.display = "block";
+    document.getElementsByClassName("menu-content")[0].style.display = "block";
 }
 window.onclick = function(event) {
   if (!event.target.matches('btn btn-dark')) {
-      document.getElementsByClassName("dropdown-content")[0].style.display = "none";
+      document.getElementsByClassName("menu-content")[0].style.display = "none";
   }
 };
 
