@@ -233,7 +233,7 @@ function getDailyTasks(){
     xhttp.send();
 }
 
-// This changes each daily task once it's checkbox is clicked to done, sending the corresponing data to update the database and doing the styling
+// This changes each daily task once it's checkbox is clicked to done, sending the corresponding data to update the database and doing the styling
 function dailyTaskDone(id){
 
         var fullDate = getFullDate();
@@ -241,16 +241,9 @@ function dailyTaskDone(id){
         var checkbox = document.getElementById("daily-checkbox"+id);
         var task = document.getElementById("daily-"+id);
 
-        if (checkbox.checked){
-                checkbox.disabled = true;
-                task.classList.add("done");
-                task.style.textDecoration = "line-through";
-                task.style.color = "gray";
-        }
-        else{
-                task.style.textDecoration = "none";
-                task.style.color = "black";
-        }
+        checkbox.disabled = true;
+        task.classList.add("done");
+
 
         // This sends an AJAX request to the back-end route listening in order to set the corresponding task to "done" (True)
         var xhttp = new XMLHttpRequest();
@@ -277,16 +270,8 @@ function specificTaskDone(id){
         var checkbox = document.getElementById("specific-checkbox"+id);
         var task = document.getElementById("specific-"+id);
 
-        if (checkbox.checked){
-                checkbox.disabled = true;
-                task.classList.add("done");
-                task.style.textDecoration = "line-through";
-                task.style.color = "gray";
-        }
-        else{
-                task.style.textDecoration = "none";
-                task.style.color = "black";
-        }
+        checkbox.disabled = true;
+        task.classList.add("done");
 
         // This sends an AJAX request to the back-end route listening in order to set the corresponding task to "done" (True)
         var xhttp = new XMLHttpRequest();
@@ -447,6 +432,17 @@ xhttp.send();
 }
 };
 
+//This is a global variable that defines if the lists will be updated when the doneTask functions are executed
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState != 4 && this.status != 200){
+        document.getElementById("loading").style.display = "block";
+    }
+    if (this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "none";
+        showDone = JSON.parse(this.response)
+    }
+};
 </script>
 
 {% endblock %}

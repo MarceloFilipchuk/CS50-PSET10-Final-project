@@ -95,18 +95,6 @@ $(document).ready(function() {
 
 //This is a global variable that defines if the lists will be updated when the doneTask functions are executed
 var showDone;
-var xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-    if (this.readyState != 4 && this.status != 200){
-        document.getElementById("loading").style.display = "block";
-    }
-    if (this.readyState == 4 && this.status == 200){
-        document.getElementById("loading").style.display = "none";
-        showDone = JSON.parse(this.response)
-    }
-};
-xhttp.open("GET", "/show_done", true);
-xhttp.send();
 
 // This sends an AJAX request to the back-end route listening in order to set the view to "hide all done tasks
 function hideDone(){
