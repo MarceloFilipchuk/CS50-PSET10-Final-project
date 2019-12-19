@@ -1,3 +1,4 @@
+import os
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_session import Session
@@ -35,7 +36,7 @@ app.config["MAIL_USE_TLS"] = False
 app.config["MAIL_USE_SSL"] = True
 app.config["MAIL_DEBUG"] = False
 app.config["MAIL_USERNAME"] = "MyOnlineAgendaCS50@gmail.com"
-app.config["MAIL_PASSWORD"] = "@MyOnlineAgendaCS50@"  #<<<<<<<<<<<<<<<<<<<<<<<<BORRAR ANTES DE SUBIR EL CODIGO A GITHUB Y ENVIARLO AL CS50<<<<<<<<<<<<<<<<<<<<<<
+app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_DEFAULT_SENDER"] = "MyOnlineAgendaCS50@gmail.com"
 app.config["MAIL_MAX_EMAILS"] = None
 app.config["MAIL_ASCII_ATTACHMENTS"] = False

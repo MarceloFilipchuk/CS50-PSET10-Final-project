@@ -1,5 +1,6 @@
 from flask import redirect, render_template, request, session
 from functools import wraps
+import os
 import string
 import random
 import pyowm
@@ -25,7 +26,7 @@ def turn_into_dictionary(results):
 def weather(lat, lng):
     lat = float(lat)
     lng = float(lng)
-    API_key = "0bc29b9bac5ae014e8d680d32b65322f"
+    API_key = os.environ.get("API_KEY")
     owm = pyowm.OWM(API_key)
     observation = owm.weather_at_coords(lat, lng)
     w = observation.get_weather()
