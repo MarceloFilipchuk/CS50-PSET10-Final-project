@@ -155,9 +155,9 @@ function getSpecificTasks(){
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
-            if (this.readyState != 4 && this.status != 200){
+                if !(this.readyState == 4 && this.status == 200){
                         document.getElementById("loading").style.display = "block";
-            }
+                }
                 if (this.readyState == 4 && this.status == 200){
                     document.getElementById("loading").style.display = "none";
                     specificTasks.innerHTML = "";
@@ -198,7 +198,7 @@ function getDailyTasks(){
     var xhttp = new XMLHttpRequest();
 
     xhttp.onreadystatechange = function() {
-            if (this.readyState != 4 && this.status != 200){
+                if !(this.readyState == 4 && this.status == 200){
                         document.getElementById("loading").style.display = "block";
                 }
         if (this.readyState == 4 && this.status == 200){
@@ -248,7 +248,7 @@ function dailyTaskDone(id){
         // This sends an AJAX request to the back-end route listening in order to set the corresponding task to "done" (True)
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-                if (this.readyState != 4 && this.status != 200){
+                if !(this.readyState == 4 && this.status == 200){
                         document.getElementById("loading").style.display = "block";
                 }
                 if (this.readyState == 4 && this.status == 200){
@@ -276,7 +276,7 @@ function specificTaskDone(id){
         // This sends an AJAX request to the back-end route listening in order to set the corresponding task to "done" (True)
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-                if (this.readyState != 4 && this.status != 200){
+                if !(this.readyState == 4 && this.status == 200){
                         document.getElementById("loading").style.display = "block";
                 }
                 if (this.readyState == 4 && this.status == 200){
@@ -304,7 +304,7 @@ function createSpecificTask(){
         // Creates an AJAX request and sends the data to the back-end for storage in the database
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
-                if (this.readyState != 4 && this.status != 200){
+                if !(this.readyState == 4 && this.status == 200){
                         document.getElementById("loading").style.display = "block";
                 }
                 if (this.readyState == 4 && this.status == 200){
@@ -320,53 +320,53 @@ function createSpecificTask(){
 
 // This creates a new daily task on form submission
 function createDailyTask(){
-        event.preventDefault();
-        var fullDate = getFullDate();
-        var task = document.forms["daily"]["daily-task"].value;
+event.preventDefault();
+var fullDate = getFullDate();
+var task = document.forms["daily"]["daily-task"].value;
 
-        // Creates an AJAX request and sends the data to the back-end for storage in the database
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-                if (this.readyState != 4 && this.status != 200){
-                        document.getElementById("loading").style.display = "block";
-                }
-                if (this.readyState == 4 && this.status == 200){
-                        document.getElementById("loading").style.display = "none";
-                        getDailyTasks();
-                        }
-                };
-        xhttp.open("GET", "/dailytask=" + task + "date=" + fullDate , true);
-        xhttp.send();
+// Creates an AJAX request and sends the data to the back-end for storage in the database
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+        if !(this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "block";
+        }
+if (this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "none";
+        getDailyTasks();
+        }
+};
+xhttp.open("GET", "/dailytask=" + task + "date=" + fullDate , true);
+xhttp.send();
 
-        document.forms["daily"]["daily-task"].value="";
+document.forms["daily"]["daily-task"].value="";
 
 }
 
 // This updates the daily tasks database
 window.onload = function (){
-    getDailyTasks();
-    var fullDate = getFullDate();
+getDailyTasks();
+var fullDate = getFullDate();
 
-    // This sends an AJAX request to the back-end route listening in order to check if daily tasks have to be reseted
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("GET", "/update_daily_tasks" + fullDate , true);
-    xhttp.send();
+// This sends an AJAX request to the back-end route listening in order to check if daily tasks have to be reseted
+var xhttp = new XMLHttpRequest();
+xhttp.open("GET", "/update_daily_tasks" + fullDate , true);
+xhttp.send();
 };
 
 // Removes the daily task from the database
 function removeDailyTask(id){
     var xhttp = new XMLHttpRequest();
 
-    xhttp.onreadystatechange = function() {
-            if (this.readyState != 4 && this.status != 200){
-                        document.getElementById("loading").style.display = "block";
-                }
-            if (this.readyState == 4 && this.status == 200){
-                    document.getElementById("loading").style.display = "none";
-                    // Updates the daily tasks displayed
-                    getDailyTasks();
-                }
-            };
+xhttp.onreadystatechange = function() {
+        if !(this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "block";
+        }
+if (this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "none";
+        // Updates the daily tasks displayed
+        getDailyTasks();
+}
+};
 
     xhttp.open("GET", "/removedailytask=" + id , true);
     xhttp.send();
@@ -376,16 +376,16 @@ function removeDailyTask(id){
 function removeSpecificTask(id){
     var xhttp = new XMLHttpRequest();
 
-    xhttp.onreadystatechange = function() {
-            if (this.readyState != 4 && this.status != 200){
-                        document.getElementById("loading").style.display = "block";
-                }
-            if (this.readyState == 4 && this.status == 200){
-                    document.getElementById("loading").style.display = "none";
-                    // Updates the daily tasks displayed
-                    getSpecificTasks();
-                }
-            };
+xhttp.onreadystatechange = function() {
+if !(this.readyState == 4 && this.status == 200){
+document.getElementById("loading").style.display = "block";
+}
+if (this.readyState == 4 && this.status == 200){
+    document.getElementById("loading").style.display = "none";
+    // Updates the daily tasks displayed
+    getSpecificTasks();
+}
+};
 
     xhttp.open("GET", "/removespecifictask=" + id , true);
     xhttp.send();
@@ -404,9 +404,9 @@ var lng= position.coords.longitude;
 var xhttp = new XMLHttpRequest();
 
 xhttp.onreadystatechange = function() {
-    if (this.readyState != 4 && this.status != 200){
-                document.getElementById("loading").style.display = "block";
-        }
+    if !(this.readyState == 4 && this.status == 200){
+        document.getElementById("loading").style.display = "block";
+    }
     if (this.readyState == 4 && this.status == 200){
             document.getElementById("loading").style.display = "none";
 
@@ -435,7 +435,7 @@ xhttp.send();
 //This is a global variable that defines if the lists will be updated when the doneTask functions are executed
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
-    if (this.readyState != 4 && this.status != 200){
+    if !(this.readyState == 4 && this.status == 200){
         document.getElementById("loading").style.display = "block";
     }
     if (this.readyState == 4 && this.status == 200){
