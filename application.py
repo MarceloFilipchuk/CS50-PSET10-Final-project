@@ -100,7 +100,7 @@ def error():
 
 
 # Logs out the user
-@app.route("/logout", methods = ["GET"])
+@app.route("/logout", methods=["GET"])
 @login_required
 def logout():
     logout_user()
@@ -108,7 +108,7 @@ def logout():
 
 
 # Allows the user to log in
-@app.route("/login", methods = ["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
 
     # Clears the session in order to log in
@@ -149,7 +149,7 @@ def login():
 
 
 # This allow new users to register
-@app.route("/register", methods = ["GET", "POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "GET":
         return render_template("register.html")
@@ -192,19 +192,19 @@ def register():
         check_username = Users.query.filter_by(username=username).first()
         check_email = Users.query.filter_by(email=email).first()
         if check_username:
-           flash("Username already taken.")
-           return redirect("/error")
+            flash("Username already taken.")
+            return redirect("/error")
         if check_email:
-           flash("Email already taken.")
-           return redirect("/error")
+            flash("Email already taken.")
+            return redirect("/error")
 
         # This sends the confirmation email
         if not check_username and not check_email:
             # This creates a dictionary with all the users registry data in order to send it via a the token in the validation process
             user_data = {
-                "username" : username,
-                "password" : generate_password_hash(password),
-                "email" : email
+                "username": username,
+                "password": generate_password_hash(password),
+                "email": email
             }
             # This creates the token
             token = s.dumps(user_data, salt="user-data")
@@ -218,12 +218,12 @@ def register():
 
 
 # This confirm the users data entered when registering
-@app.route("/confirm_account/<token>", methods = ["GET"])
+@app.route("/confirm_account/<token>", methods=["GET"])
 def confirm_account(token):
     try:
         # This gets the data from the token, which is a dictionary containing all the necesary data regarding the user in order to store it in the database
         data = s.loads(token, salt="user-data", max_age=900)
-        user= Users(username=data.get("username"), password=data.get("password"), email=data.get("email"))
+        user = Users(username=data.get("username"), password=data.get("password"), email=data.get("email"))
         check_username = Users.query.filter_by(username=data.get("username")).first()
         check_email = Users.query.filter_by(email=data.get("email")).first()
         if not check_username and not check_email:
@@ -235,7 +235,7 @@ def confirm_account(token):
         elif check_email:
             flash("Email already taken. You validated your account too late and someone else is using that email or you already validated your account.")
             return redirect("/error")
-        return redirect ("/login")
+        return redirect("/login")
     except SignatureExpired:
         flash("Your link expired. You must use it within 15 minutes after registering.")
         return redirect("/error")
@@ -250,6 +250,8 @@ def confirm_account(token):
 def index():
     return render_template("index.html")
 
+
+# This returns the weather data inside a dictionary in JSON format
 @app.route("/weatherlat=<lat>lng=<lng>")
 @login_required
 def get_weather(lat, lng):
@@ -277,7 +279,7 @@ def check(username, email):
 
     # This is for the register validation form AJAX request, returns true if both email and username are avaliable
     else:
-        check_username= Users.query.filter_by(username=username).all()
+        check_username = Users.query.filter_by(username=username).all()
         check_email = Users.query.filter_by(email=email).all()
         if not check_username and not check_email:
             return jsonify(True)
@@ -286,14 +288,13 @@ def check(username, email):
 
 
 # This saves a specific task according to its date
-@app.route("/specifictask=<specific_task>date=<specific_date>", methods = ["GET"])
+@app.route("/specifictask=<specific_task>date=<specific_date>", methods=["GET"])
 @login_required
 def save_specific_task(specific_task, specific_date):
     new_task = SpecificTasks(owner_id=current_user.get_id(), date=specific_date, task=specific_task, done=False)
     db.session.add(new_task)
     db.session.commit()
     return redirect("/")
-
 
 
 # This gets all the specific tasks according to the date sent by an AJAX request and if there are no task returns False
@@ -318,7 +319,7 @@ def get_specific_task(date):
 
 
 # This updates a specific task to "done" (True) according to the "id" sent by an AJAX request
-@app.route("/specific//<specific_id>")
+@app.route("/specific//<specific_id>", methods=["GET"])
 @login_required
 def specific_task_done(specific_id):
     task = SpecificTasks.query.filter_by(owner_id=current_user.get_id(), id=specific_id).first()
@@ -347,20 +348,20 @@ def update_daily_tasks(date):
 @app.route("/dailytask=<task>date=<date>", methods=["GET"])
 @login_required
 def daily(task, date):
-        if not task:
-            flash("Must input a task")
-            return redirect("/error")
-        elif not date:
-            flash("Must input a date")
-            return redirect("/error")
-        new_task = DailyTasks(owner_id=current_user.get_id(), task=task, last_updated=date)
-        db.session.add(new_task)
-        db.session.commit()
-        return redirect("/")
+    if not task:
+        flash("Must input a task")
+        return redirect("/error")
+    elif not date:
+        flash("Must input a date")
+        return redirect("/error")
+    new_task = DailyTasks(owner_id=current_user.get_id(), task=task, last_updated=date)
+    db.session.add(new_task)
+    db.session.commit()
+    return redirect("/")
 
 
 # This shows all the daily tasks
-@app.route("/daily/")
+@app.route("/daily/", methods=["GET"])
 @login_required
 def show_daily_tasks():
     tasks = DailyTasks.query.filter_by(owner_id=current_user.get_id()).all()
@@ -377,11 +378,12 @@ def show_daily_tasks():
             else:
                 return jsonify("notasks")
 
+
 # This turns a daily task into "done" (True) according to an "id" sent by an AJAX request
-@app.route("/daily//id=<daily_id>date=<date>")
+@app.route("/daily//id=<daily_id>date=<date>", methods=["GET"])
 @login_required
 def daily_task_done(daily_id, date):
-    task = DailyTasks.query.filter_by(owner_id = current_user.get_id(), id = daily_id).first()
+    task = DailyTasks.query.filter_by(owner_id=current_user.get_id(), id=daily_id).first()
     if not task:
         flash("No task found")
         redirect("/error")
@@ -417,12 +419,12 @@ def change():
         else:
             if check_password_hash(check.password, old_password):
                 # This creates a dictionary to be sent with the token
-                dictionary ={}
+                dictionary = {}
                 dictionary["user_id"] = current_user.get_id()
 
                 # Updates the username
                 if username:
-                    #Checks if the username is not already taken
+                    # Checks if the username is not already taken
                     check_username = Users.query.filter_by(username=username).first()
                     if not check_username:
 
@@ -486,7 +488,8 @@ def change():
                 db.session.commit()
 
                 # This creates and send the email with the token
-                msg = Message("Confirm your changes in your account", sender="MyOnlineAgendaCS50@gmail.com", recipients=[user.email])
+                msg = Message("Confirm your changes in your account",
+                              sender="MyOnlineAgendaCS50@gmail.com", recipients=[user.email])
                 confirmation_link = url_for("confirm_changes", token=token, _external=True)
                 msg.body = "Your validation link is <a href={}>here</a>.\nPlease be sure to use within the next 15 minutes as it will expire and you will need to register again.".format(confirmation_link)
                 mail.send(msg)
@@ -498,6 +501,8 @@ def change():
                 flash("The password you entered is incorrect")
                 return redirect("/error")
 
+
+# This route listens for the confirmation link in order to set the changes
 @app.route("/confirm_changes/<token>", methods=["GET"])
 def confirm_changes(token):
     try:
@@ -543,11 +548,13 @@ def confirm_changes(token):
         return redirect("/error")
     return redirect("/login")
 
+
 # This allows to check the users option "show done tasks"
 @app.route("/show_done", methods=["GET"])
 @login_required
 def show():
     return jsonify(current_user.show_done)
+
 
 # This allows to switch between seeing all tasks and only those who are not done yet
 @app.route("/show_done/<value>", methods=["GET"])
@@ -563,6 +570,8 @@ def show_done(value):
         flash("Invalid input.")
         return redirect("/error")
 
+
+# This route allows the user to change its password in case he forgot it
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     if request.method == "GET":
@@ -611,7 +620,7 @@ def forgot_password():
         else:
             # This creates the token
             random = random_generator()
-            validator = {"token" : random, "id" : user.id, "password" : generate_password_hash(password)}
+            validator = {"token": random, "id": user.id, "password": generate_password_hash(password)}
             token = s.dumps(validator, salt="forgot-password")
             user.token = random
             db.session.commit()
@@ -693,9 +702,11 @@ def errorhandler(e):
     flash(e.name)
     return redirect("/error")
 
+
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
 
 # Runs the app
 if __name__ == "__main__":
