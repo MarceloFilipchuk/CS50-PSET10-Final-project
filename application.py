@@ -84,8 +84,7 @@ login_manager.init_app(app)
 
 @login_manager.unauthorized_handler
 def unauthorized():
-    flash("Must be logged in in order to perform that action")
-    return redirect("/error")
+    return redirect("/login")
 
 
 @login_manager.user_loader
